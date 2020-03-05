@@ -1,4 +1,4 @@
-module flake
+module github.com/cnwinds/flake
 
 go 1.13
 
