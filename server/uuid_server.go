@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"flake/api"
+	"github.com/cnwinds/flake/api"
 
 	"github.com/coreos/etcd/client"
 	"golang.org/x/net/context"

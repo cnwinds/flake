@@ -1,8 +1,9 @@
 package main
 
 import (
-	"flake/server"
 	"log"
+
+	"github.com/cnwinds/flake/server"
 )
 
 func main() {

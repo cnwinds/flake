@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"flake/client"
+	"github.com/cnwinds/flake/client"
 )
 
 func TestNormal(t *testing.T) {

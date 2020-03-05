@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
-	"flake/api"
-	"flake/util"
 	"sync"
+
+	"github.com/cnwinds/flake/api"
+	"github.com/cnwinds/flake/util"
 
 	"google.golang.org/grpc"
 )
