@@ -28,22 +28,28 @@ docker build -t flake:v1 .
 ```
 
 ## 运行服务端
+这里已经准备好了一个测试环境的部署文件，直接部署后就会把etcd和flake服务端都启动好。
 
-1. 启动测试用的etcd
-```bash
-docker run -d -p32379:2379 -p32380:2380 xieyanze/etcd3:latest
 ```
-*注意*： 以上命令行启动的etcd没有挂载存储，每次重启后数据会丢失。
+kubectl create -f .\flake_test.yaml
+```
 
-2. 启动flake服务端
-```bash
-go run flake.go
-```
+部署成功后，etcd的服务端口映射到32379，32380。 flake的服务端口映射到本机的31000。
+
+**注意**：测试环境的etcd没有挂载存储，所以每次重启后里面的数据都会丢失！
 
 ## 运行测试
 
 ```bash
 go test -v
+```
+
+不出意外的话，应该可以看到测试结果了。
+
+如果不需要测试环境的容器则可以运行一下命令进行清场。
+
+```
+kubectl delete  -f .\flake_test.yaml
 ```
 
 # 术语
@@ -64,7 +70,7 @@ go test -v
 下面展示了go客户端里怎样集成flake库获取UUID
 ```golang
 cfg := &client.Config{
-    Endpoint:    "127.0.0.1:30001", // flake server address
+    Endpoint:    "127.0.0.1:31000", // flake server address
     IsPrevFetch: true}              // 预获取
 c, err := client.NewClient(cfg)
 if err != nil {

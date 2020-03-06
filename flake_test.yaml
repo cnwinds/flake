@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: etcd
+spec:
+  selector:
+    matchLabels:
+        comp : etcd
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        comp : etcd
+    spec:
+      containers:
+      - env:
+        name: etcd
+        image: xieyanze/etcd3:latest
+        ports:
+        - containerPort: 2379
+        - containerPort: 2380
+      restartPolicy: Always
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+spec:
+  type: NodePort
+  ports:
+  - name: p1
+    port: 2379
+    # targetPort: 2379
+    nodePort: 32379
+  - name: p2
+    port: 2380
+    # targetPort: 2380
+    nodePort: 32380
+  selector:
+    comp : etcd
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flake
+spec:
+  selector:
+    matchLabels:
+      comp : flake
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        comp : flake
+    spec:
+      containers:
+      - env:
+        name: flake
+        image: flake:v1
+        ports:
+        - containerPort: 10001
+      restartPolicy: Always
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flake
+spec:
+  type: NodePort
+  ports:
+  - name: p1
+    port: 10001
+    # targetPort: 10001
+    nodePort: 31000
+  selector:
+    comp : flake
