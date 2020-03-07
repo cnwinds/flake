@@ -9,11 +9,29 @@ flake使用go语言编写。由分配UUID段的服务端和客户端库组成。
 
 # Getting started
 
-下面开始构建一个测试运行环境。
-## 构建服务端
-1. 将项目拉取到本地。
+下面开始构建一个测试运行环境。在正式开始之前需要：
+
+* 安装go开发环境 （[golang](https://golang.org/dl/)）
+* k8s的运行环境 （[docker-desktop](https://www.docker.com/products/docker-desktop) ，[开启k8s的方法](https://github.com/AliyunContainerService/k8s-for-docker-desktop)）
+
+完成以上工作后，使用以下命令进行验证，如果能看到对应的结果则说明准备环境已经搭建完成。
+
+```
+> go version
+go version go1.13.8 windows/amd64
+```
+
+```
+> kubectl version
+Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.5", GitCommit:"20c265fef0741dd71a66480e35bd69f18351daea", GitTreeState:"clean", BuildDate:"2019-10-15T19:16:51Z", GoVersion:"go1.12.10", Compiler:"gc", Platform:"windows/amd64"}
+Server Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.5", GitCommit:"20c265fef0741dd71a66480e35bd69f18351daea", GitTreeState:"clean", BuildDate:"2019-10-15T19:07:57Z", GoVersion:"go1.12.10", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+## 构建镜像
+1. 将项目拉取到本地。并进入项目目录。
 ```bash
 git clone https://github.com/cnwinds/flake.git
+cd flake
 ```
 
 2. 获取go的依赖库。
@@ -28,11 +46,19 @@ docker build -t flake:v1 .
 ```
 
 ## 运行服务端
-这里已经准备好了一个测试环境的部署文件，直接部署后就会把etcd和flake服务端都启动好。
+这里有两种方式启动服务端:
 
+**1. docker方式**
 ```
-kubectl create -f .\flake_test.yaml
+docker-compose -f .\test_compose.yml up -d
 ```
+
+**2. kubernetes方式**
+```
+kubectl create -f .\test_k8s.yaml
+```
+
+在测试环境里这两种方式结果是一样的，任选一种启动服务端。
 
 部署成功后，etcd的服务端口映射到32379，32380。 flake的服务端口映射到本机的31000。
 
@@ -46,10 +72,18 @@ go test -v
 
 不出意外的话，应该可以看到测试结果了。
 
-如果不需要测试环境的容器则可以运行一下命令进行清场。
+## 关闭服务端
 
+如果不需要测试环境的容器则可以运行以下命令进行清理。
+
+**1. docker方式**
 ```
-kubectl delete  -f .\flake_test.yaml
+docker-compose -f .\test_compose.yml down
+```
+
+**2. kubernetes方式**
+```
+kubectl delete -f .\test_k8s.yaml
 ```
 
 # 术语

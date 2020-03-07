@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  etcd:
+    image: xieyanze/etcd3:latest
+    ports:
+    - "32379:2379"
+    - "32380:2380"
+  flake:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flake:v1
+    ports:
+    - "31000:10001"
+    environment:
+    - GET_HOSTS_FROM=dns
+    depends_on:
+    - etcd
