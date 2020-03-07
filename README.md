@@ -1,4 +1,6 @@
 # flake
+![CI](https://github.com/cnwinds/flake/workflows/CI/badge.svg?branch=master)
+
 flake是一个分布式ID生成算法的实现。他基于snowflake算法修改，使得在k8s环境下能更好的工作。他的主要特点：
 
 * flake基于k8s微服务架构的微服务设计，可以部署多个服务端，避免服务端的单点故障。 数据存储使用k8s的etcd进行保存。
