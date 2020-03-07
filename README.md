@@ -1,5 +1,6 @@
 # flake
 ![CI](https://github.com/cnwinds/flake/workflows/CI/badge.svg?branch=master)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat)](https://pkg.go.dev/github.com/cnwinds/flake?tab=overview)
 
 flake是一个分布式ID生成算法的实现。他基于snowflake算法修改，使得在k8s环境下能更好的工作。他的主要特点：
 
