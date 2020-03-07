@@ -2,10 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, add-comment ]
     paths-ignore: [ '**.md' ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, add-comment ]
     paths-ignore: [ '**.md' ]
 
 jobs:
