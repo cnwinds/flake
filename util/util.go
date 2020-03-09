@@ -33,8 +33,11 @@ func execShell(s string) (string, error) {
 // GenUUID generate a 64bit UUID.
 //
 // Detail format:
-// 0            0........0			0....................0	0.............................0
-// 1bit sign    10bit serviceID     22bit containerID       31bit sequenceID
+// |--------|-------------------|------------------------|---------------------------------|
+// | 0      | 0........0        | 0....................0 | 0.............................0 |
+// |--------|-------------------|------------------------|---------------------------------|
+// | (1bit) | (10bit) serviceID | (22bit) containerID    | (31bit) sequenceID              |
+// |--------|-------------------|------------------------|---------------------------------|
 func GenUUID(serviceID int32, containerID int32, sequenceID int32) int64 {
 	var uuid uint64
 	uuid |= uint64(serviceID) << 53

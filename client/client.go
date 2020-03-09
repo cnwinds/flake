@@ -10,10 +10,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Config the config used to create client.
 type Config struct {
-	Endpoint    string
-	IsPrevFetch bool
-	NeedCount   int
+	Endpoint   string
+	IsPrefetch bool
+	NeedCount  int
 }
 
 type uuidNode struct {
@@ -26,6 +27,7 @@ type uuidNode struct {
 	serviceName string
 }
 
+// Client client.
 type Client struct {
 	cfg  *Config
 	conn *grpc.ClientConn
@@ -43,6 +45,7 @@ func (c *Client) fetch(serviceName string, containerName string, needCount int) 
 	return resp, err
 }
 
+// SetNeedCount sets the number of uuids to be fetched from the server each time.
 func (c *Client) SetNeedCount(serviceName string, needCount int) {
 	key := serviceName + c.containerName
 
@@ -57,6 +60,8 @@ func (c *Client) SetNeedCount(serviceName string, needCount int) {
 	v.needCount = needCount
 }
 
+// GenUUID generate a UUID.
+// Support for multi-threaded parallel calls.
 func (c *Client) GenUUID(serviceName string) (uuid int64, err error) {
 	key := serviceName + c.containerName
 
@@ -82,8 +87,8 @@ func (c *Client) GenUUID(serviceName string) (uuid int64, err error) {
 			}
 			v.leftCount--
 
-			// fetch data in advance
-			if c.cfg.IsPrevFetch {
+			// prefetch data
+			if c.cfg.IsPrefetch {
 				if v.isFetching == false && v.leftCount < v.needCount/2 {
 					// start coroutines
 					v.isFetching = true
@@ -132,11 +137,13 @@ func (c *Client) fetchAndInsert(serviceName string, node *uuidNode) error {
 	return nil
 }
 
+// Close free client.
 func (c *Client) Close() {
 	c.conn.Close()
 	c.store = nil
 }
 
+// NewClient create a new client.
 func NewClient(cfg *Config) (client *Client, err error) {
 	client = &Client{cfg: cfg}
 	if client.cfg.NeedCount == 0 {

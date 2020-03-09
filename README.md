@@ -1,13 +1,13 @@
 # flake
 ![CI](https://github.com/cnwinds/flake/workflows/CI/badge.svg?branch=master)
 
-flake是一个分布式ID生成算法的实现。他基于snowflake算法修改，使得在k8s环境下能更好的工作。他的主要特点：
+flake是一个分布式ID生成算法的golang实现。他基于snowflake算法修改，使得在k8s环境下能更好的工作。他的主要特点：
 
 * flake基于k8s微服务架构的微服务设计，可以部署多个服务端，避免服务端的单点故障。 数据存储使用k8s的etcd进行保存。
 * 同一个业务启动多个微服务端，可以同时请求，保证每个端都能生成唯一ID。
 * 算法中不使用时间，避免时间回拨的问题。
 
-flake使用go语言编写。由分配UUID段的服务端和客户端库组成。服务端使用docker容器部署运行。
+flake使用golang编写。由分配UUID段的服务端和客户端库组成。服务端使用docker容器部署运行。
 
 # Getting started
 
@@ -105,40 +105,64 @@ kubectl delete -f .\test_k8s.yaml
 ## GO客户端集成
 下面展示了go客户端里怎样集成flake库获取UUID
 ```golang
-cfg := &client.Config{
-    Endpoint:    "127.0.0.1:31000", // flake server address
-    IsPrevFetch: true}              // 预获取
-c, err := client.NewClient(cfg)
-if err != nil {
-    t.Fatal(err)
+package main
+
+import (
+	"log"
+	"os"
+	"sync"
+
+	"github.com/cnwinds/flake/client"
+)
+
+var uuid client.Client
+
+func main() {
+	cfg := &client.Config{
+		Endpoint:   "127.0.0.1:31000", // flake server listen address
+		IsPrefetch: true}              // prefetch
+	c, err := client.NewClient(cfg)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	defer c.Close()
+
+	c.SetNeedCount("User", 1000) // sets the number of uuids to be fetched from the server each time.
+
+	v, err := c.GenUUID("User")
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	log.Printf("UUID value: %v", v)
+
+	c.SetNeedCount("Order", 10000)
+
+	v, err = c.GenUUID("Order")
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	log.Printf("UUID value: %v", v)
+
+	// 支持并行调用
+	var w sync.WaitGroup
+	t1 := func(serviceName string) {
+		for i := 0; i < 1000000; i++ {
+			v, err = c.GenUUID(serviceName)
+		}
+		w.Done()
+	}
+
+	c.SetNeedCount("User", 5000)
+	c.SetNeedCount("Order", 5000)
+
+	w.Add(2)
+	go t1("User")
+	go t1("Order")
+	w.Wait()
 }
-defer c.Close()
-
-c.SetNeedCount("User", 1000)       // 设置UUID段的大小
-```
-
-以上是初始化部分。接下来就可以生成UUID了。
-
-```golang
-v, err := c.GenUUID("User")
-if err != nil {
-    log.Println(err)
-    os.Exit(1)
-}
-log.Printf("UUID value: %v", v)
-```
-
-也可以同时给多个业务系统的分配UUID。
-
-```golang
-c.SetNeedCount("Order", 10000)  // 设置UUID段的大小
-
-v, err := c.GenUUID("Order")
-if err != nil {
-    log.Println(err)
-    os.Exit(1)
-}
-log.Printf("UUID value: %v", v)
 ```
 
 # flake算法
