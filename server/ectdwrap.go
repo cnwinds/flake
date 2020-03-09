@@ -9,18 +9,25 @@ import (
 	"golang.org/x/net/context"
 )
 
+// EtcdWrapConfig config struct
 type EtcdWrapConfig struct {
+	// Endpoints defines a set of URLs
 	Endpoints []string
-	UserName  string
-	Password  string
+	// Username specifies the user credential to add as an authorization header
+	UserName string
+	// Password is the password for the specified user to add as an authorization header
+	// to the request.
+	Password string
 }
 
+// EtcdWrap Encapsulation of etcd
 type EtcdWrap struct {
 	cfg        *EtcdWrapConfig
 	etcdClient client.Client
 	etcdAPI    client.KeysAPI
 }
 
+// NewEtcdWrap create a new etcd wrap.
 func NewEtcdWrap(cfg *EtcdWrapConfig) (w *EtcdWrap, err error) {
 	w = &EtcdWrap{cfg: cfg}
 	log.Printf("etcd wrap config: %v", cfg)
@@ -38,10 +45,12 @@ func NewEtcdWrap(cfg *EtcdWrapConfig) (w *EtcdWrap, err error) {
 	return w, nil
 }
 
+// GetVersion retrieves the current etcd server and cluster version.
 func (w *EtcdWrap) GetVersion() (*version.Versions, error) {
 	return w.etcdClient.GetVersion(context.Background())
 }
 
+// GetNCreate retrieves a set of Nodes from etcd, created if not present.
 func (w *EtcdWrap) GetNCreate(key string, createValue int) (*client.Response, error) {
 	for {
 		r, err := w.etcdAPI.Get(context.Background(), key, nil)
@@ -62,6 +71,7 @@ func (w *EtcdWrap) GetNCreate(key string, createValue int) (*client.Response, er
 	}
 }
 
+// AtomAdd add value to the value atom of key.
 func (w *EtcdWrap) AtomAdd(key string, value int) (int, error) {
 	for {
 		r, err := w.etcdAPI.Get(context.Background(), key, nil)
@@ -79,6 +89,7 @@ func (w *EtcdWrap) AtomAdd(key string, value int) (int, error) {
 	}
 }
 
+// Get retrieves a set of Nodes from etcd
 func (w *EtcdWrap) Get(key string) (*client.Response, error) {
 	r, err := w.etcdAPI.Get(context.Background(), key, nil)
 	if err != nil {
@@ -87,11 +98,13 @@ func (w *EtcdWrap) Get(key string) (*client.Response, error) {
 	return r, nil
 }
 
+// Set assigns a new value to a Node identified by a given key.
 func (w *EtcdWrap) Set(key string, value string, opts *client.SetOptions) (*client.Response, error) {
 	r, err := w.etcdAPI.Set(context.Background(), key, value, opts)
 	return r, err
 }
 
+// Delete removes a Node identified by the given key.
 func (w *EtcdWrap) Delete(key string) (*client.Response, error) {
 	reps, err := w.etcdAPI.Delete(context.Background(), key, nil)
 	if err != nil {
@@ -100,6 +113,7 @@ func (w *EtcdWrap) Delete(key string) (*client.Response, error) {
 	return reps, nil
 }
 
+// IsKeyExist returns true if the error code is ErrorCodeNodeExist.
 func (w *EtcdWrap) IsKeyExist(err error) bool {
 	if cErr, ok := err.(client.Error); ok {
 		return cErr.Code == client.ErrorCodeNodeExist
@@ -107,6 +121,7 @@ func (w *EtcdWrap) IsKeyExist(err error) bool {
 	return false
 }
 
+// IsKeyNotFound returns true if the error code is ErrorCodeKeyNotFound.
 func (w *EtcdWrap) IsKeyNotFound(err error) bool {
 	return client.IsKeyNotFound(err)
 }

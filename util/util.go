@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// GetContainerName get container name from docker process.
 func GetContainerName() string {
 	out, err := execShell(`cat /proc/self/cgroup | grep "cpu:/"`)
 	if err != nil {
@@ -29,10 +30,14 @@ func execShell(s string) (string, error) {
 	return out.String(), err
 }
 
-// generate uuid, format:
+// GenUUID generate a 64bit UUID.
 //
-// 0		0........0			0....................0	0.............................0
-// 1-bit	10bit service id	22bit container id		31bit sequence
+// Detail format:
+// |--------|-------------------|------------------------|---------------------------------|
+// | 0      | 0........0        | 0....................0 | 0.............................0 |
+// |--------|-------------------|------------------------|---------------------------------|
+// | (1bit) | (10bit) serviceID | (22bit) containerID    | (31bit) sequenceID              |
+// |--------|-------------------|------------------------|---------------------------------|
 func GenUUID(serviceID int32, containerID int32, sequenceID int32) int64 {
 	var uuid uint64
 	uuid |= uint64(serviceID) << 53
@@ -41,6 +46,7 @@ func GenUUID(serviceID int32, containerID int32, sequenceID int32) int64 {
 	return int64(uuid)
 }
 
+// Min return the smallest number of x, y
 func Min(x, y int) int {
 	if x > y {
 		return y
@@ -48,6 +54,7 @@ func Min(x, y int) int {
 	return x
 }
 
+// Max return the biggest number of x, y
 func Max(x, y int) int {
 	if x > y {
 		return x

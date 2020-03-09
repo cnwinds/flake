@@ -16,28 +16,45 @@ import (
 )
 
 const (
+	// StartOfContainerID the first ID that the container starts to assgin.
 	StartOfContainerID = 10
-	StartOfServerID    = 10
-	StartOfSequence    = 1
-	MaxOfSequence      = 1 << 31
-	// MaxOfSequence = 1 << 10  // for test "TestOverRang"
+	// StartOfServerID the first ID that the server starts to assgin.
+	StartOfServerID = 10
+	// StartOfSequence the first ID that the sequence starts to assgin.
+	StartOfSequence = 1
+	// MaxOfSequence the maximum of the sequence.
+	MaxOfSequence = 1 << 31
+	// the following line used for the test of "TestOverRang"
+	// MaxOfSequence = 1 << 10
 
+	// KeyOfMaxContainerID holds the key for the maximum container ID.
 	KeyOfMaxContainerID = "max_containerid"
-	KeyOfMaxServiceID   = "max_serviceid"
+	// KeyOfMaxServiceID holds the key for the maximum service ID.
+	KeyOfMaxServiceID = "max_serviceid"
 
+	// KeyOfContainerDir the directory where the key value is saved.
 	KeyOfContainerDir = "container"
-	KeyOfServiceDir   = "service"
+	// KeyOfServiceDir the directory where the key value is saved.
+	KeyOfServiceDir = "service"
 )
 
+// Config the config used to create the server.
 type Config struct {
+	// Endpoints defines a set of URLs
 	Endpoints []string
-	UserName  string
-	Password  string
+	// Username specifies the user credential to add as an authorization header
+	UserName string
+	// Password is the password for the specified user to add as an authorization header
+	// to the request.
+	Password string
 
+	// ListenAddress the server listens for local address.
 	ListenAddress string
-	Prefix        string
+	// Prefix path prefix saved in the etcd.
+	Prefix string
 }
 
+// UUIDServer UUID server.
 type UUIDServer struct {
 	cfg        *Config
 	etcdWrap   *EtcdWrap
@@ -45,6 +62,7 @@ type UUIDServer struct {
 	grpcServer *grpc.Server
 }
 
+// Fetch get UUID range through the server.
 func (s *UUIDServer) Fetch(ctx context.Context, in *api.FetchRequest) (*api.FetchReply, error) {
 	result := &api.FetchReply{}
 	leftCount := int(in.NeedCount)
@@ -142,6 +160,7 @@ func (s *UUIDServer) nextContainerID() (id int, err error) {
 	return result, nil
 }
 
+// ReassignContainerID reassign an ID to the container.
 func (s *UUIDServer) ReassignContainerID(containerName string) error {
 	key := s.cfg.Prefix + "/" + KeyOfContainerDir + "/" + containerName
 	containerID, err := s.nextContainerID()
@@ -250,6 +269,7 @@ func (s *UUIDServer) initUUIDData() (success bool, err error) {
 	return true, nil
 }
 
+// StartServer create a server and run it.
 func StartServer(cfg *Config) (*UUIDServer, error) {
 	rand.Seed(time.Now().UnixNano())
 

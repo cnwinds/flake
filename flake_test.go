@@ -12,7 +12,7 @@ import (
 func TestNormal(t *testing.T) {
 	// t.SkipNow()
 
-	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrevFetch: true}
+	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrefetch: true}
 	c, err := client.NewClient(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -32,20 +32,20 @@ func TestNormal(t *testing.T) {
 	}
 }
 
-func TestPrevFetchEffect(t *testing.T) {
+func TestPreFetchEffect(t *testing.T) {
 	// t.SkipNow()
 
 	// the service call speed is very fast, and the advantages are not obvious.
 	t1 := time.Now()
 	{
-		cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrevFetch: true}
+		cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrefetch: true}
 		c, err := client.NewClient(cfg)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer c.Close()
 
-		key := "TestPrevFetchEffect"
+		key := "TestPreFetchEffect"
 		c.SetNeedCount(key, 10000)
 		for i := 0; i < 1000000; i++ {
 			_, err := c.GenUUID(key)
@@ -54,18 +54,18 @@ func TestPrevFetchEffect(t *testing.T) {
 			}
 		}
 	}
-	log.Printf("have prev fetch cost time: %v", time.Since(t1))
+	log.Printf("have prefetch cost time: %v", time.Since(t1))
 
 	t2 := time.Now()
 	{
-		cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrevFetch: false}
+		cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrefetch: false}
 		c, err := client.NewClient(cfg)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer c.Close()
 
-		key := "TestPrevFetchEffect"
+		key := "TestPreFetchEffect"
 		c.SetNeedCount(key, 10000)
 		for i := 0; i < 1000000; i++ {
 			_, err := c.GenUUID(key)
@@ -74,14 +74,14 @@ func TestPrevFetchEffect(t *testing.T) {
 			}
 		}
 	}
-	log.Printf("no prev fetch cost time: %v", time.Since(t2))
+	log.Printf("no prefetch cost time: %v", time.Since(t2))
 }
 
 func TestOverSegment(t *testing.T) {
 	t.SkipNow()
 	// important:
 	// change "MaxOfSequence = 1 << 10" to "MaxOfSequence = 1 << 10" in "uuid_server.go" file, and complete the test
-	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrevFetch: true}
+	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrefetch: true}
 	c, err := client.NewClient(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -104,7 +104,7 @@ func TestOverSegment(t *testing.T) {
 func TestParallel1(t *testing.T) {
 	// t.SkipNow()
 
-	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrevFetch: false}
+	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrefetch: false}
 	c, err := client.NewClient(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +136,7 @@ func TestParallel1(t *testing.T) {
 func TestParallel2(t *testing.T) {
 	// t.SkipNow()
 
-	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrevFetch: true}
+	cfg := &client.Config{Endpoint: "127.0.0.1:31000", IsPrefetch: true}
 	c, err := client.NewClient(cfg)
 	if err != nil {
 		t.Fatal(err)
