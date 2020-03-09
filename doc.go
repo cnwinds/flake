@@ -12,3 +12,4 @@ Flake is written in the golang.
 Consists of the server and client libraries that assign the UUID segment.
 The server is deployed and run using the docker container.
 */
+package main
