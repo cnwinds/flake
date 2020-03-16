@@ -9,6 +9,55 @@ import (
 	"github.com/cnwinds/flake/client"
 )
 
+// verify that the generated uuid is duplicated
+type verify struct {
+	storeMap    map[int64]int
+	dupMap      map[int64]int
+	verifyQueue chan int64
+	done        sync.WaitGroup
+}
+
+func (v *verify) Start() {
+	v.storeMap = make(map[int64]int, 10000)
+	v.dupMap = make(map[int64]int, 10000)
+	v.verifyQueue = make(chan int64, 100000)
+	f := func() {
+		for true {
+			value := <-v.verifyQueue
+			if value > 0 {
+				s, ok := v.storeMap[value]
+				if ok == true {
+					v.storeMap[value] = s + 1
+					v.dupMap[value] = s + 1
+				} else {
+					v.storeMap[value] = 1
+				}
+			} else {
+				v.done.Done()
+				break
+			}
+		}
+	}
+	v.done.Add(1)
+	go f()
+}
+
+func (v *verify) Verify(value int64) {
+	v.verifyQueue <- value
+}
+
+func (v *verify) Stop() {
+	v.verifyQueue <- -1
+	v.done.Wait()
+}
+
+func (v *verify) HasError() (bool, map[int64]int) {
+	if len(v.dupMap) > 0 {
+		return true, v.dupMap
+	}
+	return false, nil
+}
+
 func TestNormal(t *testing.T) {
 	// t.SkipNow()
 
@@ -19,6 +68,9 @@ func TestNormal(t *testing.T) {
 	}
 	defer c.Close()
 
+	ve := new(verify)
+	ve.Start()
+
 	key := "TestNormal"
 	c.SetNeedCount(key, 1000)
 	for i := 0; i < 100000; i++ {
@@ -26,9 +78,18 @@ func TestNormal(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		ve.Verify(v)
+
 		if i%10000 == 0 {
-			log.Printf("Complete count: %v, uuid value: %v", i, v)
+			log.Printf("TestNormal: Complete count: %v, uuid value: %v", i, v)
 		}
+	}
+
+	ve.Stop()
+	r, dupMap := ve.HasError()
+	if r == true {
+		log.Fatalf("%v", dupMap)
 	}
 }
 

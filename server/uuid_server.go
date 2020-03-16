@@ -203,7 +203,7 @@ func (s *UUIDServer) getUUIDSegment(serviceName string, containerName string, ne
 		if err != nil {
 			if s.etcdWrap.IsKeyNotFound(err) {
 				startID = 1
-				endID = startID + needCount - 1
+				endID = startID + needCount
 				if endID > MaxOfSequence {
 					err := s.ReassignContainerID(containerName)
 					if err != nil {
@@ -217,7 +217,7 @@ func (s *UUIDServer) getUUIDSegment(serviceName string, containerName string, ne
 					continue
 				}
 				// create success
-				return serviceID, containerID, startID, endID, nil
+				return serviceID, containerID, startID, endID - 1, nil
 			}
 			return 0, 0, 0, 0, err
 		}
@@ -237,7 +237,7 @@ func (s *UUIDServer) getUUIDSegment(serviceName string, containerName string, ne
 			return s.getUUIDSegment(serviceName, containerName, needCount)
 		}
 
-		endID = startID + needCount - 1
+		endID = startID + needCount
 		if endID > MaxOfSequence {
 			err := s.ReassignContainerID(containerName)
 			if err != nil {
@@ -251,7 +251,7 @@ func (s *UUIDServer) getUUIDSegment(serviceName string, containerName string, ne
 			continue
 		}
 		// modify success
-		return serviceID, containerID, startID, endID, nil
+		return serviceID, containerID, startID, endID - 1, nil
 	}
 }
 
