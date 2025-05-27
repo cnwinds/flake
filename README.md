@@ -10,6 +10,8 @@ flake是一个分布式ID生成算法的golang实现。他基于snowflake算法�
 
 flake使用golang编写。由分配UUID段的服务端和客户端库组成。服务端使用docker容器部署运行。
 
+**项目维护更新**: 项目的关键依赖（如 etcd, gRPC, Protocol Buffers）已更新至较新版本，以确保项目能够受益于最新的功能和安全更新。
+
 # Getting started
 
 下面开始构建一个测试运行环境。在正式开始之前需要：
@@ -21,7 +23,7 @@ flake使用golang编写。由分配UUID段的服务端和客户端库组成。�
 
 ```
 > go version
-go version go1.13.8 windows/amd64
+go version go1.23.0 linux/amd64 (或更新版本)
 ```
 
 ```
@@ -43,6 +45,8 @@ go mod tidy
 go mod vendor
 
 ```
+本项目使用 gRPC 和 Protocol Buffers。如果您修改了 `api/uuid.proto` 文件，则需要使用 `protoc` 编译器以及 `protoc-gen-go` 和 `protoc-gen-go-grpc` 插件来重新生成 Go 代码。具体的生成命令可以参考 `api/compile.bat` 文件。
+
 3. 构建服务端镜像。
 ```bash
 docker build -t flake:v1 .
